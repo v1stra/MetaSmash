@@ -4,6 +4,7 @@ import magic
 import exiftool
 import PIL.ExifTags
 import PIL.Image
+import argparse
 
 SENSITIVE_TAGS = [
     "EXIF:GPSLatitude",
@@ -49,24 +50,17 @@ def main():
     """
     Prompts the user for a file location and extracts sensitive metadata and exif data.
     """
-    if len(sys.argv) < 2:
-        file_path = input("Please enter a file location: ")
-    else:
-        file_path = sys.argv[1]
-
-    if not os.path.isfile(file_path):
-        print(f"Error: {file_path} is not a valid file.")
-        return
-
-    extract_gps = False
-    if len(sys.argv) >= 3 and sys.argv[2].lower() == "--gps":
-        extract_gps = True
+    
+    parser = argparse.ArgumentParser(description="MetaSmash to get all the metas.")
+    parser.add_argument('-g', '--extract-gps', help='Extract GPS data', action='store_true')
+    parser.add_argument('file_path', help='Path to the file from which to extract MetaData')  
+    args = parser.parse_args()
 
     mime = magic.Magic(mime=True)
-    file_type = mime.from_file(file_path)
+    file_type = mime.from_file(args.file_path)
 
-    if "image" in file_type or "pdf" in file_type or "video" in file_type or "audio" in file_type or "ms-office" in file_type or "officedocument" in file_type:
-        metadata = extract_metadata(file_path, extract_gps)
+    if "image" in file_type or "pdf" in file_type or "video" in file_type or "audio" in file_type or "ms-office" in file_type or "officedocument" in file_type or "msword" in file_type:
+        metadata = extract_metadata(args.file_path, args.extract_gps)
         formatted_metadata = format_metadata(metadata)
         print(formatted_metadata)
     else:
